@@ -50,7 +50,7 @@ URL Shortening API in GoLang
 
 3. With the server running, open a new terminal or Postman and send a `POST` request with the URL that you want to shorten
 
-    Note: A `GET` request without an inital succesful `POST` request will result in a `404 StatusNotFound` error
+    Note: A `GET` request without an initial succesful `POST` request will result in a `404 StatusNotFound` error
 
     Example (Powershell cURL):
     ```bash

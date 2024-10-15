@@ -1,17 +1,48 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 )
+
+var db *sql.DB
 
 var urlStore = make(map[string]string)
 var mu sync.Mutex
 
 func main() {
+	// Database Connection
+	cfg := mysql.Config{
+		User:   os.Getenv("DBUSER"),
+		Passwd: os.Getenv("DBPASS"),
+		Net:    "tcp",
+		Addr:   "localhost:3306",
+		DBName: "url_shortener",
+	}
+
+	dsn := cfg.FormatDSN()
+
+	var err error
+	db, err = sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if pingErr := db.Ping(); pingErr != nil {
+		log.Fatal(pingErr)
+	}
+	defer db.Close()
+	fmt.Println("Connected!")
+
+	// Gin Server Configuration and Start
 	router := gin.Default()
 	router.SetTrustedProxies([]string{"localhost", "127.0.0.1"})
 
@@ -21,6 +52,8 @@ func main() {
 	router.Run("localhost:8080")
 }
 
+// Shortens URL that is passed in through the request body
+// Calls URL shortening method to create a unique identifier
 func shortenURL(c *gin.Context) {
 	var url struct {
 		LongURL string `json:"long_url" binding:"required"`
@@ -42,6 +75,7 @@ func shortenURL(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, shortURL)
 }
 
+// Redirects user to corresponding URL based on short URL contained in endpoint parameter
 func redirectURL(c *gin.Context) {
 	shortURL := c.Param("shortURL")
 
