@@ -39,7 +39,7 @@ func shortenURL(c *gin.Context) {
 	urlStore[shortURL] = url.LongURL
 	mu.Unlock()
 
-	c.IndentedJSON(http.StatusOK, shortURL)
+	c.IndentedJSON(http.StatusCreated, shortURL)
 }
 
 func redirectURL(c *gin.Context) {
